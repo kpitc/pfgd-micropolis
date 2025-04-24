@@ -60,7 +60,16 @@ public enum MicropolisMessage
 	RIOTING_REPORT,
 
 	// added by Jason
-	NO_NUCLEAR_PLANTS;
+	NO_NUCLEAR_PLANTS,
+
+	//added by Kiwi
+	HERO_MONSTER_REPORT,		// 45			doMessages
+	HERO_TORNADO_REPORT,		// 46			doMessages
+	HERO_FIRE_REPORT,			// 47			doMessages
+	HERO_FLOOD_REPORT;			// 48			doMessages
+
+
+
 
 	/** Whether the message should be displayed in the notification pane. */
 	public boolean useNotificationPane = false;

@@ -41,7 +41,8 @@ class MapScanner extends TileBehavior
 		STADIUM_EMPTY,
 		STADIUM_FULL,
 		AIRPORT,
-		SEAPORT;
+		SEAPORT,
+		SUPERHQ;
 	}
 
 	@Override
@@ -72,6 +73,9 @@ class MapScanner extends TileBehavior
 		case POLICESTATION:
 			doPoliceStation();
 			return;
+		case SUPERHQ:
+			doSUPERHQ();
+			return;
 		case STADIUM_EMPTY:
 			doStadiumEmpty();
 			return;
@@ -84,6 +88,7 @@ class MapScanner extends TileBehavior
 		case SEAPORT:
 			doSeaport();
 			return;
+
 		default:
 			assert false;
 		}
@@ -250,6 +255,43 @@ class MapScanner extends TileBehavior
 		}
 
 		city.policeMap[ypos/8][xpos/8] += z;
+	}
+
+	void doSUPERHQ()
+	{
+		boolean powerOn = checkZonePower();
+		city.superHQCount++;
+		if ((city.cityTime % 8) == 0) {
+			repairZone(SUPERHQ, 3);
+		}
+
+		int z;
+		if (powerOn) {
+			z = city.policeEffect;
+		} else {
+			z = city.policeEffect / 2;
+		}
+
+		traffic.mapX = xpos;
+		traffic.mapY = ypos;
+		if (!traffic.findPerimeterRoad()) {
+			z /= 2;
+		}
+
+
+		city.policeMap[ypos/8][xpos/8] += z;
+
+		//increases land value near SUPERHQ tile
+		for (int dy = -2; dy <= 2; dy++) {
+			for (int dx = -2; dx <= 2; dx++) {
+				int xx = xpos + dx;
+				int yy = ypos + dy;
+				if (yy >= 0 && yy < city.landValueMem.length &&
+						xx >= 0 && xx < city.landValueMem[0].length) {
+					city.landValueMem[yy][xx] = Math.min(250, city.landValueMem[yy][xx] + 40);
+				}
+			}
+		}
 	}
 
 	void doStadiumEmpty()

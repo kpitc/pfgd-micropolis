@@ -97,6 +97,7 @@ public class TileImages
 	Image loadSpriteImage(SpriteKind kind, int frameNo)
 	{
 		String resourceName = "/obj"+kind.objectId+"-"+frameNo;
+		System.out.println("Loading: " + resourceName + ".png");
 
 		// first, try to load specific size image
 		URL iconUrl = TileImages.class.getResource(resourceName+"_"+TILE_WIDTH+"x"+TILE_HEIGHT+".png");

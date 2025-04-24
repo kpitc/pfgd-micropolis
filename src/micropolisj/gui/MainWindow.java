@@ -207,6 +207,8 @@ public class MainWindow extends JFrame
 			}
 			});
 
+
+
 		MouseAdapter mouse = new MouseAdapter() {
 			public void mousePressed(MouseEvent ev)
 			{
@@ -281,6 +283,7 @@ public class MainWindow extends JFrame
 		engine.addEarthquakeListener(this);
 		reloadFunds();
 		reloadOptions();
+
 		startTimer();
 		makeClean();
 	}
@@ -955,6 +958,12 @@ public class MainWindow extends JFrame
 			tool.name();
 
 		JToggleButton btn = new JToggleButton();
+
+		//testing for kiwi
+		System.out.println("Loading icon for: " + tool.name());
+		System.out.println(" → " + iconName);
+		System.out.println(" → Resolved: " + MainWindow.class.getResource(iconName));
+
 		btn.setIcon(new ImageIcon(MainWindow.class.getResource(iconName)));
 		btn.setSelectedIcon(new ImageIcon(MainWindow.class.getResource(iconSelectedName)));
 		btn.setToolTipText(tipText);
@@ -1046,6 +1055,13 @@ public class MainWindow extends JFrame
 		gridBox.add(b6,c);
 
 		b6.add(makeToolBtn(MicropolisTool.AIRPORT));
+
+		//testing change on gui
+		//kiwi
+		c.gridy++;
+		Box b7 = new Box(BoxLayout.X_AXIS);
+		gridBox.add(b7,c);
+		b7.add(makeToolBtn(MicropolisTool.SUPERHQ));
 
 		// add glue to make all elements align toward top
 		c.gridy++;
@@ -1524,12 +1540,21 @@ public class MainWindow extends JFrame
 		switch (disaster) {
 		case FIRE:
 			getEngine().makeFire();
+			if (getEngine().superHQCount > 0) {
+				getEngine().dispatchSuperHero(HeroSprite.HeroMission.FIRE);
+			}
 			break;
 		case FLOOD:
 			getEngine().makeFlood();
+			if (getEngine().superHQCount > 0) {
+				getEngine().dispatchSuperHero(HeroSprite.HeroMission.FLOOD);
+			}
 			break;
 		case MONSTER:
 			getEngine().makeMonster();
+			if (getEngine().superHQCount > 0) {
+				getEngine().dispatchSuperHero(HeroSprite.HeroMission.MONSTER);
+			}
 			break;
 		case MELTDOWN:
 			if (!getEngine().makeMeltdown()) {
@@ -1538,6 +1563,9 @@ public class MainWindow extends JFrame
 			break;
 		case TORNADO:
 			getEngine().makeTornado();
+			if (getEngine().superHQCount > 0) {
+				getEngine().dispatchSuperHero(HeroSprite.HeroMission.TORNADO);
+			}
 			break;
 		case EARTHQUAKE:
 			getEngine().makeEarthquake();

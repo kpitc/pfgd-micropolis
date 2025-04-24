@@ -30,7 +30,15 @@ public enum Sound
 	HONKHONK_HI   ("honkhonk-hi"),
 	SIREN         ("siren"),
 	HEAVYTRAFFIC  ("heavytraffic"),
-	MONSTER       ("zombie-roar-5");
+	MONSTER       ("zombie-roar-5"),
+
+	//added by kiwi
+	HEROFLY	("flying"),
+	HEROLAND("landing"),
+	HEROFIRE("extinguish"),
+	HEROTORNADO("disperse"),
+	HEROFLOOD("reverseflood"),
+	HEROTHEME("theme");
 
 	String wavName;
 	private Sound(String wavName)

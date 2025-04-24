@@ -3,6 +3,7 @@
     <option name="MAIN_CLASS_NAME" value="micropolisj.build_tool.MakeTiles" />
     <module name="micropolis220" />
     <option name="PROGRAM_PARAMETERS" value="../resources/tiles.rc ../resources" />
+    <option name="VM_PARAMETERS" value="-Dcomplete_batch" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/graphics" />
     <method v="2">
       <option name="Make" enabled="true" />

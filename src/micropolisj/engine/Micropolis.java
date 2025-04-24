@@ -10,6 +10,8 @@ package micropolisj.engine;
 
 import java.io.*;
 import java.util.*;
+import java.util.Queue;
+import javax.sound.sampled.Clip;
 
 import static micropolisj.engine.TileConstants.*;
 
@@ -119,6 +121,13 @@ public class Micropolis
 	int hospitalCount;
 	int churchCount;
 	int policeCount;
+
+	public int superHQCount; //modified by kiwi
+	public boolean heroBusy = false;
+	public Queue<HeroSprite.HeroMission> missionQueue = new LinkedList<>();
+	public Clip heroSoundClip;
+
+
 	int fireStationCount;
 	int stadiumCount;
 	int coalCount;
@@ -532,6 +541,7 @@ public class Micropolis
 		hospitalCount = 0;
 		churchCount = 0;
 		policeCount = 0;
+		superHQCount = 0;
 		fireStationCount = 0;
 		stadiumCount = 0;
 		coalCount = 0;
@@ -881,7 +891,7 @@ public class Micropolis
 		fireMapOverlayDataChanged(MapState.POLICE_OVERLAY);
 	}
 
-	void doDisasters()
+	public void doDisasters()
 	{
 		if (floodCnt > 0) {
 			floodCnt--;
@@ -899,15 +909,24 @@ public class Micropolis
 		case 0:
 		case 1:
 			setFire();
+			if (superHQCount > 0) {
+				dispatchSuperHero(HeroSprite.HeroMission.FIRE);
+			}
 			break;
 		case 2:
 		case 3:
 			makeFlood();
+			if (superHQCount > 0) {
+				dispatchSuperHero(HeroSprite.HeroMission.FLOOD);
+			}
 			break;
 		case 4:
 			break;
 		case 5:
 			makeTornado();
+			if (superHQCount > 0) {
+				dispatchSuperHero(HeroSprite.HeroMission.TORNADO);
+			}
 			break;
 		case 6:
 			makeEarthquake();
@@ -916,10 +935,16 @@ public class Micropolis
 		case 8:
 			if (pollutionAverage > 60) {
 				makeMonster();
+
+			}
+			if (superHQCount > 0) {
+				dispatchSuperHero(HeroSprite.HeroMission.MONSTER);
 			}
 			break;
 		}
 	}
+
+
 
 	private int[][] smoothFirePoliceMap(int[][] omap)
 	{
@@ -1467,6 +1492,9 @@ public class Micropolis
 		bb.put("STADIUM_FULL", new MapScanner(this, MapScanner.B.STADIUM_FULL));
 		bb.put("AIRPORT", new MapScanner(this, MapScanner.B.AIRPORT));
 		bb.put("SEAPORT", new MapScanner(this, MapScanner.B.SEAPORT));
+
+		//kiwi
+		bb.put("SUPERHQ", new MapScanner(this, MapScanner.B.SUPERHQ));
 
 		this.tileBehaviors = bb;
 	}
@@ -2208,6 +2236,11 @@ public class Micropolis
 		}
 	}
 
+	public void removeSprite(Sprite s)
+	{
+		sprites.remove(s);
+	}
+
 	void animateTiles()
 	{
 		for (int y = 0; y < map.length; y++)
@@ -2260,6 +2293,7 @@ public class Micropolis
 
 	void setFire()
 	{
+		System.out.println("setFire() was called!");
 		int x = PRNG.nextInt(getWidth());
 		int y = PRNG.nextInt(getHeight());
 		int t = getTile(x, y);
@@ -2268,11 +2302,14 @@ public class Micropolis
 			setTile(x, y, (char)(FIRE + PRNG.nextInt(8)));
 			crashLocation = new CityLocation(x, y);
 			sendMessageAt(MicropolisMessage.FIRE_REPORT, x, y);
+			System.out.println("Fire tile set at: " + x + "," + y);
+
 		}
 	}
 
 	public void makeFire()
 	{
+		System.out.println("makeFire() was called!");
 		// forty attempts at finding place to start fire
 		for (int t = 0; t < 40; t++)
 		{
@@ -2284,10 +2321,13 @@ public class Micropolis
 				if (tile > 21 && tile < LASTZONE) {
 					setTile(x, y, (char)(FIRE + PRNG.nextInt(8)));
 					sendMessageAt(MicropolisMessage.FIRE_REPORT, x, y);
+					System.out.println("Fire tile set at: " + x + "," + y);
+					//dispatchSuperHero(HeroSprite.HeroMission.FIRE);
 					return;
 				}
 			}
 		}
+
 	}
 
 	/**
@@ -2314,6 +2354,56 @@ public class Micropolis
 		CityLocation p = candidates.get(i);
 		doMeltdown(p.x, p.y);
 		return true;
+
+		//COMMENT OUT FOR TESING OF SUPERHERO
+		//dispatchSuperHero();
+	}
+
+	/*
+	 * Dispatches a superhero sprite to handle the specified disaster mission.
+	 *
+	 * - Finds the location of the Superhero HQ tile (if available) to spawn the hero.
+	 * - Defaults to city center if no Superhero HQ is found.
+	 * - Adds a new HeroSprite to the city and marks the hero as active.
+	 */
+	 public void dispatchSuperHero(HeroSprite.HeroMission mission)
+	{
+		System.out.println("Hero has been dispatched" + mission);
+
+		if (heroBusy || hasSprite(SpriteKind.HER)) {
+
+			missionQueue.add(mission);
+			return;
+		}
+
+		heroBusy = true;
+
+		int xpos = -1;
+		int ypos = -1;
+
+		for (int y = 0; y< getHeight(); y++) {
+			for (int x = 0; x < getWidth(); x++) {
+				if (getTile(x, y) == TileConstants.SUPERHQ) {
+					xpos = x;
+					ypos = y;
+					break;
+				}
+			}
+			if (xpos != -1) break;
+		}
+
+		//in the case that dispatch is called somehow without superhq
+		if (xpos == -1 || ypos == -1) {
+			xpos = getWidth() / 2;
+			ypos = getHeight() / 2;
+		}
+
+
+		HeroSprite hero = new HeroSprite(this, xpos, ypos, mission);
+		hero.superHQX = xpos * 16 + 8;
+		hero.superHQY = ypos * 16 + 8;
+		//makeSound(xpos/16,ypos/16, Sound.HEROFLY);
+		sprites.add(hero);
 	}
 
 	public void makeMonster()
@@ -2349,6 +2439,11 @@ public class Micropolis
 	{
 		assert !hasSprite(SpriteKind.GOD);
 		sprites.add(new MonsterSprite(this, xpos, ypos));
+		sendMessageAt(MicropolisMessage.MONSTER_REPORT, xpos, ypos);
+
+
+		//COMMENT OUT FOR TESING OF SUPERHERO
+		//dispatchSuperHero();
 	}
 
 	public void makeTornado()
@@ -2366,6 +2461,29 @@ public class Micropolis
 		int ypos = PRNG.nextInt(getHeight() - 19) + 10;
 		sprites.add(new TornadoSprite(this, xpos, ypos));
 		sendMessageAt(MicropolisMessage.TORNADO_REPORT, xpos, ypos);
+
+		//COMMENT OUT FOR TETSING OF SUPERHERO
+		//dispatchSuperHero(HeroSprite.HeroMission.TORNADO);
+	}
+
+	/*
+	 * Reverses the effects of flooding by converting all flood tiles back to dirt.
+	 *
+	 * This function is triggered when the superhero completes a FLOOD mission.
+	 * It scans the entire map for tiles marked as flooded and replaces them with dirt tiles,
+	 * effectively stopping the flood visually and functionally.
+	 */
+	public void reverseFlood()
+	{
+		System.out.println("reversing flood");
+		for (int y = 0; y < getHeight(); y++) {
+			for (int x = 0; x < getWidth(); x++) {
+				if (getTile(x, y) == FLOOD) {
+					setTile(x, y, DIRT);
+				}
+			}
+		}
+		floodCnt = 0;
 	}
 
 	public void makeFlood()
@@ -2390,12 +2508,19 @@ public class Micropolis
 							sendMessageAt(MicropolisMessage.FLOOD_REPORT, xx, yy);
 							floodX = xx;
 							floodY = yy;
+
+							System.out.println("floodCnt is" + floodCnt);
+
+								//dispatchSuperHero(HeroSprite.HeroMission.FLOOD);
+
 							return;
 						}
 					}
 				}
 			}
 		}
+
+
 	}
 
 	/**

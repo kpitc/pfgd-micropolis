@@ -152,7 +152,12 @@ public abstract class Sprite
 			city.crashLocation = new CityLocation(xpos, ypos);
 			city.sendMessageAt(MicropolisMessage.COPTER_CRASH_REPORT, xpos, ypos);
 			break;
+		case GOD:
+			city.crashLocation = new CityLocation(xpos, ypos);
+			city.sendMessageAt(MicropolisMessage.HERO_MONSTER_REPORT, xpos, ypos);
+			break;
 		}
+
 
 		city.makeSound(xpos, ypos, Sound.EXPLOSION_HIGH);
 	}

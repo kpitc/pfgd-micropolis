@@ -143,6 +143,7 @@ public class MicropolisDrawingArea extends JComponent
 
 	void drawSprite(Graphics gr, Sprite sprite)
 	{
+
 		assert sprite.isVisible();
 
 		Point p = new Point(

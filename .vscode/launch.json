@@ -4,6 +4,8 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
+
         {
             "type": "java",
             "name": "Current File",
@@ -22,6 +24,7 @@
             "request": "launch",
             "mainClass": "micropolisj.build_tool.MakeTiles",
             "args": "resources/tiles.rc resources",
+            "vmArgs": "-Dcomplete_batch"
             
         }
     ]
